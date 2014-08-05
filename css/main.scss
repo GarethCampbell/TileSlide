@@ -1,0 +1,217 @@
+@mixin smaller($width) {
+  @media screen and (max-width: $width) {
+    @content;
+  }
+}
+
+$game-size: 400px;
+$mobile-threshold: $game-size + 50px;
+
+$game-tiles: 6;
+$tile-values: 8;
+$tile-size: $game-size / (($game-tiles)+1);
+
+$tile-sprite-size: 50px;
+
+$transition-speed: 100ms;
+
+$tile-colors:#FFD700,#f45530,#55bbFF,#ba60ff,#F7A216,#8DB63E,#000000,#eeeeee;
+
+
+// MIXINS
+@mixin transform($args...) {
+  -webkit-transform: $args;
+  -moz-transform: $args;
+  transform: $args;
+}
+@mixin transition($args...) {
+  -webkit-transition: $args;
+  -moz-transition: $args;
+  transition: $args;
+}
+
+@mixin animation($args...) {
+  -webkit-animation: $args;
+  -moz-animation: $args;
+  animation: $args;
+}
+
+@mixin animation-duration($args...) {
+  -webkit-animation-fill-mode: $args;
+  -moz-animation-fill-mode: $args;
+  animation-fill-mode: $args;
+}
+
+@mixin animation-fill-mode($args...) {
+  -webkit-animation-fill-mode: $args;
+  -moz-animation-fill-mode: $args;
+  animation-fill-mode: $args;
+}
+
+@mixin keyframes($animation-name) {
+  @-webkit-keyframes $animation-name {
+    @content;
+  }
+  @-moz-keyframes $animation-name {
+    @content;
+  }
+  @keyframes $animation-name {
+    @content;
+  }
+}
+
+@include keyframes(die) {
+  50% { opacity:1.0; }
+  100% { opacity:0.0;}
+}
+
+// ELEMS
+
+* {
+  cursor: default;
+  -webkit-touch-callout: none;
+  -ms-touch-callout: none;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+
+  -ms-touch-action: none;
+  touch-action: none;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #faf8ef;
+}
+body {
+  margin: 80px 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+h1 {  
+  font-size: 48px;
+}
+.game-wrapper {
+  width:$game-size;
+  margin:0 auto;
+}
+@mixin game {
+  .game-container {  
+    position: absolute;
+    width: $game-size;
+    height: $game-size;
+
+    overflow: hidden;
+    background: #111111;
+  }
+
+
+  .tile {
+    position: absolute;
+    width: $tile-size;
+    height: $tile-size;
+
+    line-height: $tile-size;
+    font-size: $tile-size/2;
+    text-align: center;
+
+    background-image: url('../assets/test.png');
+    background-size: auto $tile-size;
+
+    @include transition($transition-speed ease-in-out);
+    -webkit-transition-property: all;
+    -moz-transition-property: all;
+    transition-property: all;
+    /*
+    -webkit-transition-property: -webkit-transform;
+    -moz-transition-property: -moz-transform;
+    transition-property: transform; 
+    */
+  }
+
+  .tile-buffer {
+    opacity:0.8;
+  }
+
+  .tile-dead {
+    @include animation(die $transition-speed*2);
+    @include animation-fill-mode(forwards);
+  }
+
+  // TILE VALUE SELECTORS
+  @for $x from 0 through ($tile-values)-(1) {
+    .tile-#{$x} {
+      background-color: nth($tile-colors, $x+1);
+      background-position:-1*$tile-size*$x 0px;
+
+      color: nth($tile-colors, $x+1);
+    }
+  }
+
+  // POSITION SELECTORS
+  @for $x from 0 through ($game-tiles)-(1) {
+    @for $y from 0 through ($game-tiles)-(1) {
+      .tile-position-#{$x}-#{$y} {
+        $xPos: ($tile-size * $x)+($tile-size/2);
+        $yPos: ($tile-size * $y)+($tile-size/2);
+        @include transform(translate($xPos, $yPos));
+      }
+    }
+
+    // BUFFERS
+    .tile-position-buffer-n#{$x} {
+      $xPos: ($tile-size * $x)+($tile-size/2);
+      $yPos: -($tile-size/2);
+      @include transform(translate($xPos, $yPos));
+    }
+    .tile-position-buffer-w#{$x} {
+      $xPos: -($tile-size/2);
+      $yPos: ($tile-size * $x)+($tile-size/2);
+      @include transform(translate($xPos, $yPos));
+    }
+    .tile-position-buffer-s#{$x} {
+      $xPos: ($tile-size * $x)+($tile-size/2);
+      $yPos: ($game-size)-($tile-size/2);
+      @include transform(translate($xPos, $yPos));
+    }
+    .tile-position-buffer-e#{$x} {
+      $xPos: ($game-size)-($tile-size/2);
+      $yPos: ($tile-size * $x)+($tile-size/2);    
+      @include transform(translate($xPos, $yPos));
+    }
+    // PREBUFFERS
+    .tile-position-buffer-pn#{$x} {
+      $xPos: ($tile-size * $x)+($tile-size/2);
+      $yPos: -($tile-size)-($tile-size/2);
+      @include transform(translate($xPos, $yPos));
+    }
+    .tile-position-buffer-pw#{$x} {
+      $xPos: -($tile-size)-($tile-size/2);
+      $yPos: ($tile-size * $x)+($tile-size/2);
+      @include transform(translate($xPos, $yPos));
+    }
+    .tile-position-buffer-ps#{$x} {
+      $xPos: ($tile-size * $x)+($tile-size/2);
+      $yPos: ($game-size)-($tile-size/2)+($tile-size);
+      @include transform(translate($xPos, $yPos));
+    }
+    .tile-position-buffer-pe#{$x} {
+      $xPos: ($game-size)-($tile-size/2)+($tile-size);
+      $yPos: ($tile-size * $x)+($tile-size/2);    
+      @include transform(translate($xPos, $yPos));
+    }
+  }
+}
+
+@include game;
+
+// MOBILE
+/*
+@include smaller($mobile-threshold) {
+  // Redefine variables for smaller screens
+  $game-size: 100%;
+  $game-tiles: 6;
+  $tile-size: $game-size / (($game-tiles)+1);
+
+  @include game;
+}*/
